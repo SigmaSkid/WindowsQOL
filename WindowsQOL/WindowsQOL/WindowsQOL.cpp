@@ -31,6 +31,7 @@ namespace globals {
 	static HWND focused_hwnd{};
 	static HWND taskview_hwnd{};
 	static RECT focused_rect{};
+	static POINT cursorPos;
 	static int screenx = 1920, screeny = 1080;
 };
 
@@ -155,6 +156,8 @@ void UpdateGlobalData()
 	globals::focused_hwnd = GetForegroundWindow();
 	globals::taskview_hwnd = FindWindow(NULL, L"Task View");
 
+	GetCursorPos(&globals::cursorPos);
+
 	GetScreenSize(globals::screenx, globals::screeny);
 
 	GetWindowRect(globals::focused_hwnd, &globals::focused_rect);
@@ -205,10 +208,7 @@ void HandleHotCorner()
 	static bool prevent = false;
 	static bool pressed = false;
 
-	POINT cursorPos;
-	GetCursorPos(&cursorPos);
-
-	if (cursorPos.x < affected_area && cursorPos.y < affected_area)
+	if (globals::cursorPos.x < affected_area && globals::cursorPos.y < affected_area)
 	{
 		if (prevent)
 			return;
@@ -245,29 +245,22 @@ void HandleBetterTaskview()
 	POINT cursorPos;
 	GetCursorPos(&cursorPos);
 
-	int screenWidth, screenHeight;
-	GetScreenSize(screenWidth, screenHeight);
-
 	static int timer = 0;
 	if (timer < timer_delay)
 	{
 		timer++;
 	}
-	else
+	else if (cursorPos.y > max(affected_area, globals::screeny / 8)
+		&& cursorPos.y < min(globals::screeny - affected_area, globals::screeny * 0.875f))
 	{
-
-		if (cursorPos.y > max(affected_area, screenHeight / 8)
-			&& cursorPos.y < min(screenHeight - affected_area, screenHeight * 0.875f))
+		if (cursorPos.x < affected_area) {
+			MoveVirtualDesktopLeft();
+			timer = 0;
+		}
+		else if (cursorPos.x + affected_area > globals::screenx)
 		{
-			if (cursorPos.x < affected_area) {
-				MoveVirtualDesktopLeft();
-				timer = 0;
-			}
-			else if (cursorPos.x + affected_area > screenWidth)
-			{
-				MoveVirtualDesktopRight();
-				timer = 0;
-			}
+			MoveVirtualDesktopRight();
+			timer = 0;
 		}
 	}
 }
@@ -283,16 +276,13 @@ void HandleBetterWindows()
 	if (last_rect == globals::focused_rect)
 		return;
 
-	int screenWidth, screenHeight;
-	GetScreenSize(screenWidth, screenHeight);
-
 	// Why windows why.
 	constexpr int horizontal_padding = 8;
 	const int taskbar_padding = globals::taskbar_autohide ? -8 : 40;
 
 	// if the window is bigger than our screen, return instead of panic mode
-	if (globals::focused_rect.right - globals::focused_rect.left + horizontal_padding * 2 >= screenWidth
-		|| globals::focused_rect.bottom - globals::focused_rect.top + taskbar_padding >= screenHeight)
+	if (globals::focused_rect.right - globals::focused_rect.left + horizontal_padding * 2 >= globals::screenx
+		|| globals::focused_rect.bottom - globals::focused_rect.top + taskbar_padding >= globals::screeny)
 	{
 		return;
 	}
@@ -308,16 +298,16 @@ void HandleBetterWindows()
 	int y = globals::focused_rect.top;
 
 	// check if window is too far right
-	if (globals::focused_rect.right > screenWidth + horizontal_padding)
+	if (globals::focused_rect.right > globals::screenx + horizontal_padding)
 	{
-		int offset = globals::focused_rect.right - (screenWidth + horizontal_padding);
+		int offset = globals::focused_rect.right - (globals::screenx + horizontal_padding);
 		x -= offset;
 	}
 
 	// if window is too far down
-	if (globals::focused_rect.bottom > screenHeight - taskbar_padding)
+	if (globals::focused_rect.bottom > globals::screeny - taskbar_padding)
 	{
-		int offset = globals::focused_rect.bottom - (screenHeight - taskbar_padding);
+		int offset = globals::focused_rect.bottom - (globals::screeny - taskbar_padding);
 		y -= offset;
 	}
 
