@@ -271,11 +271,6 @@ void HandleBetterWindows()
 	if (globals::current_window_status != FocusedDragging)
 		return;
 
-	static RECT last_rect;
-
-	if (last_rect == globals::focused_rect)
-		return;
-
 	// Why windows why.
 	constexpr int horizontal_padding = 8;
 	const int taskbar_padding = globals::taskbar_autohide ? -8 : 40;
