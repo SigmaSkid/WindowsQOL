@@ -33,6 +33,8 @@ You can quickly open the autostart folder with
 - win+r -> shell:startup
 
 ## Compile it yourself
-Just use the projects .sln file in visual studio.
-If errors appear, google how to fix them.
-Good luck.
+1. Clone the repository.
+2. Open the project in Microsoft Visual Studio 2019 or newer.
+3. Select the appropriate build configuration (e.g. Debug or Release, x64).
+4. Build the project using Visual Studio's build command (e.g. Build > Build Solution).
+5. The compiled executable will be located in the project's output directory (e.g. \~\WindowsQOL\x64\Release|Debug).
