@@ -33,6 +33,7 @@ namespace globals {
 	static RECT focused_rect{};
 	static POINT cursorPos;
 	static int screenx = 1920, screeny = 1080;
+	static HANDLE g_hMutex = NULL;
 };
 
 bool operator==(const RECT& lhs, const RECT& rhs)
@@ -346,8 +347,40 @@ void MyMainFunction() {
 	HandleBetterWindows();
 }
 
+// Function to handle the WM_CLOSE message
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	switch (msg) {
+	case WM_CLOSE:
+		// Release the mutex before closing the application
+		if (globals::g_hMutex != NULL) {
+			CloseHandle(globals::g_hMutex);
+		}
+		break;
+	}
+	return 0;
+}
+
+// Function to handle the termination signal
+BOOL WINAPI ConsoleHandler(DWORD dwCtrlType) {
+	// Release the mutex before terminating the application
+	if (globals::g_hMutex != NULL) {
+		CloseHandle(globals::g_hMutex);
+	}
+	return FALSE;
+}
+
 int main()
 {
+	globals::g_hMutex = CreateMutexA(NULL, TRUE, "SigmaSkidWindowsQOL");
+	if (GetLastError() == ERROR_ALREADY_EXISTS) {
+        // An instance of the application is already running
+        CloseHandle(globals::g_hMutex);
+        return 0;
+    }
+
+	// Set up a console signal handler to catch termination signals
+	SetConsoleCtrlHandler(ConsoleHandler, TRUE);
+
 	while (true) {
 		MyMainFunction();
 		Sleep(sleep_delay);
