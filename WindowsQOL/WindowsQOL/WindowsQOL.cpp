@@ -272,30 +272,38 @@ void HandleBetterWindows()
 		return;
 
 	// Why windows why.
-	constexpr int horizontal_padding = 8;
+	constexpr int window_padding = 8;
 	const int taskbar_padding = globals::taskbar_autohide ? -8 : 40;
 
-	// if the window is bigger than our screen, return instead of panic mode
-	if (globals::focused_rect.right - globals::focused_rect.left + horizontal_padding * 2 >= globals::screenx
-		|| globals::focused_rect.bottom - globals::focused_rect.top + taskbar_padding >= globals::screeny)
-	{
-		return;
-	}
-
 #ifdef _DEBUG
-	cout << "User tried to move window to: " << endl <<
+	cout << "moved window to: " << endl <<
 		"     " << globals::focused_rect.top << endl <<
 		globals::focused_rect.left << "     " << globals::focused_rect.right << endl <<
 		"     " << globals::focused_rect.bottom << endl;
 #endif
 
+	// if the window is bigger than our screen, return instead of panic mode
+	if (globals::focused_rect.right - globals::focused_rect.left - (window_padding * 2) >= globals::screenx
+		|| globals::focused_rect.bottom - globals::focused_rect.top - window_padding + taskbar_padding >= globals::screeny)
+	{
+
+#ifdef _DEBUG
+		cout << "Window is >= screen, we outta here" << endl;
+		cout << "It's either borderless or maximized" << endl;
+//		cout << globals::focused_rect.right - globals::focused_rect.left - (window_padding * 2) << endl;
+//		cout << globals::focused_rect.bottom - globals::focused_rect.top - window_padding + taskbar_padding << endl;
+#endif
+		return;
+	}
+
+
 	int x = globals::focused_rect.left;
 	int y = globals::focused_rect.top;
 
 	// check if window is too far right
-	if (globals::focused_rect.right > globals::screenx + horizontal_padding)
+	if (globals::focused_rect.right > globals::screenx + window_padding)
 	{
-		int offset = globals::focused_rect.right - (globals::screenx + horizontal_padding);
+		int offset = globals::focused_rect.right - (globals::screenx + window_padding);
 		x -= offset;
 	}
 
@@ -313,9 +321,9 @@ void HandleBetterWindows()
 	}
 
 	// if window is too far left
-	if (globals::focused_rect.left < -horizontal_padding)
+	if (globals::focused_rect.left < -window_padding)
 	{
-		x = -horizontal_padding;
+		x = -window_padding;
 	}
 
 	// move the window
@@ -326,11 +334,13 @@ void HandleBetterWindows()
 		cout << "Fixed to: x:" << x << " y:" << y << endl << endl << endl;
 #endif
 	}
-
 }
 
 void MyMainFunction() {
 	UpdateGlobalData();
+#ifdef _DEBUG
+//	cout << globals::current_window_status << endl;
+#endif
 	HandleHotCorner();
 	HandleBetterTaskview();
 	HandleBetterWindows();
