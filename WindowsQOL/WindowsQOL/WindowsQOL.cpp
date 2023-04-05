@@ -46,9 +46,8 @@ bool operator!=(const RECT& lhs, const RECT& rhs)
 	return !(lhs == rhs);
 }
 
-void PressWindowsKey()
+void ToggleTaskview()
 {
-	// press the Windows key
 	INPUT inputs[2];
 	inputs[0].type = INPUT_KEYBOARD;
 	inputs[0].ki.wVk = VK_LWIN;
@@ -223,7 +222,7 @@ void HandleHotCorner()
 
 		if (!pressed)
 		{
-			PressWindowsKey();
+			ToggleTaskview();
 			pressed = true;
 		}
 	}
